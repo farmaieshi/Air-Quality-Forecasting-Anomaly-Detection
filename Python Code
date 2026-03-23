@@ -1,0 +1,276 @@
+# ============================================================
+# Air Quality Forecasting & Anomaly Detection (Professional)
+# Author: [Your Name]
+# Description:
+# End-to-end time-series ML pipeline:
+# - Data cleaning
+# - Feature engineering
+# - Anomaly detection
+# - Forecasting (classification)
+# - Evaluation and visualization
+# ============================================================
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import IsolationForest, RandomForestClassifier
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+from sklearn.metrics import (
+    accuracy_score,
+    roc_auc_score,
+    confusion_matrix,
+    classification_report,
+    RocCurveDisplay
+)
+
+# ------------------------------------------------------------
+# Global visualization settings
+# ------------------------------------------------------------
+sns.set(style="whitegrid")
+plt.rcParams['figure.figsize'] = (12, 6)
+
+# ============================================================
+# 1. LOAD & CLEAN DATA
+# ============================================================
+def load_and_clean_data(file_path: str) -> pd.DataFrame:
+    """
+    Load dataset and perform robust cleaning.
+
+    Steps:
+    - Handle missing values
+    - Replace invalid sensor readings
+    - Create datetime index
+    - Ensure time-series consistency
+    """
+
+    # Load CSV (UCI format uses ';' separator and ',' decimal)
+    df = pd.read_csv(file_path, sep=';', decimal=',')
+
+    # Keep first 15 columns (drop empty trailing columns)
+    df = df.iloc[:, :15]
+
+    # Drop fully empty rows/columns
+    df.dropna(how='all', inplace=True)
+    df.dropna(axis=1, how='all', inplace=True)
+
+    # Replace invalid sensor readings (-200) with NaN
+    df.replace(-200, np.nan, inplace=True)
+
+    # Drop column with excessive missing values
+    if 'NMHC(GT)' in df.columns:
+        df.drop('NMHC(GT)', axis=1, inplace=True)
+
+    # Interpolate missing values, then forward/backward fill
+    df = df.interpolate().ffill().bfill()
+
+    # Combine Date and Time columns into datetime
+    df['Datetime'] = pd.to_datetime(
+        df['Date'] + ' ' + df['Time'].str.replace('.', ':'),
+        errors='coerce'
+    )
+
+    # Drop rows where datetime parsing failed
+    df.dropna(subset=['Datetime'], inplace=True)
+
+    # Set datetime as index
+    df.set_index('Datetime', inplace=True)
+
+    # Drop original Date and Time columns
+    df.drop(['Date', 'Time'], axis=1, inplace=True)
+
+    return df
+
+# ============================================================
+# 2. FEATURE ENGINEERING
+# ============================================================
+def create_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create time-series features including:
+    - Time-based
+    - Lag features
+    - Rolling statistics
+    """
+
+    # --------------------------
+    # Time-based features
+    # --------------------------
+    df['hour'] = df.index.hour
+    df['day_of_week'] = df.index.dayofweek
+    df['month'] = df.index.month
+    df['is_weekend'] = (df.index.dayofweek >= 5).astype(int)
+
+    # --------------------------
+    # Lag features (previous timesteps)
+    # --------------------------
+    df['CO_lag1'] = df['CO(GT)'].shift(1)
+    df['CO_lag2'] = df['CO(GT)'].shift(2)
+
+    # --------------------------
+    # Rolling features
+    # --------------------------
+    df['CO_roll_mean_3'] = df['CO(GT)'].rolling(window=3).mean()
+    df['CO_diff'] = df['CO(GT)'].diff()
+
+    # Drop rows with NaN created by lag/rolling
+    df = df.dropna().copy()
+
+    return df
+
+# ============================================================
+# 3. TARGET ENGINEERING
+# ============================================================
+def create_target(df: pd.DataFrame, threshold: float = None) -> pd.DataFrame:
+    """
+    Create target for forecasting:
+    Predict if CO(GT) exceeds threshold in the next hour.
+    """
+
+    # Use median as default threshold
+    if threshold is None:
+        threshold = df['CO(GT)'].median()
+
+    # Shift target to next timestep
+    df['target'] = (df['CO(GT)'].shift(-1) > threshold).astype(int)
+
+    # Drop last row (no future value)
+    df = df.dropna().copy()
+
+    return df
+
+# ============================================================
+# 4. ANOMALY DETECTION
+# ============================================================
+def run_anomaly_detection(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Detect anomalies using Isolation Forest
+    """
+
+    # Select relevant features
+    features = ['CO(GT)', 'PT08.S1(CO)', 'T', 'RH']
+
+    # Scale features
+    scaler = StandardScaler()
+    scaled_data = scaler.fit_transform(df[features])
+
+    # Isolation Forest model
+    model = IsolationForest(contamination=0.03, random_state=42)
+    preds = model.fit_predict(scaled_data)
+
+    # Convert output to 0=normal, 1=anomaly
+    df['is_anomaly'] = pd.Series(preds, index=df.index).map({1: 0, -1: 1})
+
+    # Visualization
+    plt.figure()
+    sns.scatterplot(x=df.index, y=df['T'], hue=df['is_anomaly'], palette=['green', 'red'])
+    plt.title("Detected Temperature Anomalies")
+    plt.show()
+
+    return df
+
+# ============================================================
+# 5. CLASSIFICATION (FORECASTING MODEL)
+# ============================================================
+def run_classification(df: pd.DataFrame):
+    """
+    Train a forecasting model using time-series split.
+    """
+
+    # --------------------------
+    # Time-based train/test split
+    # --------------------------
+    split_index = int(len(df) * 0.8)
+    train_df = df.iloc[:split_index]
+    test_df = df.iloc[split_index:]
+
+    # Drop leakage features
+    drop_cols = ['target', 'CO(GT)', 'is_anomaly']
+
+    X_train = train_df.drop(drop_cols, axis=1, errors='ignore')
+    y_train = train_df['target']
+
+    X_test = test_df.drop(drop_cols, axis=1, errors='ignore')
+    y_test = test_df['target']
+
+    # Scale features
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # --------------------------
+    # Random Forest + GridSearchCV
+    # --------------------------
+    model = RandomForestClassifier(random_state=42)
+
+    # Hyperparameters
+    param_grid = {
+        'n_estimators': [100, 200],
+        'max_depth': [5, 10, None]
+    }
+
+    # TimeSeriesSplit for CV
+    tscv = TimeSeriesSplit(n_splits=3)
+
+    grid = GridSearchCV(model, param_grid, cv=tscv, scoring='roc_auc')
+    grid.fit(X_train_scaled, y_train)
+
+    best_model = grid.best_estimator_
+
+    # Predictions
+    y_pred = best_model.predict(X_test_scaled)
+    y_prob = best_model.predict_proba(X_test_scaled)[:, 1]
+
+    # --------------------------
+    # Evaluation
+    # --------------------------
+    print("Best Parameters:", grid.best_params_)
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+    print("ROC AUC:", roc_auc_score(y_test, y_prob))
+    print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+    # --------------------------
+    # Feature Importance
+    # --------------------------
+    importance_df = pd.DataFrame({
+        'feature': X_train.columns,
+        'importance': best_model.feature_importances_
+    }).sort_values(by='importance', ascending=False)
+
+    sns.barplot(data=importance_df.head(10), x='importance', y='feature', palette="viridis")
+    plt.title("Top 10 Important Features")
+    plt.show()
+
+    # --------------------------
+    # ROC Curve
+    # --------------------------
+    RocCurveDisplay.from_estimator(best_model, X_test_scaled, y_test)
+    plt.show()
+
+# ============================================================
+# MAIN EXECUTION
+# ============================================================
+if __name__ == "__main__":
+
+    DATA_PATH = "AirQualityUCI.csv"
+
+    # 1. Load and clean data
+    df = load_and_clean_data(DATA_PATH)
+
+    # 2. Feature engineering
+    df = create_features(df)
+
+    # 3. Create forecasting target
+    df = create_target(df)
+
+    # 4. Visualize CO levels trend
+    df['CO(GT)'].plot(title='CO Levels Over Time')
+    plt.show()
+
+    # 5. Anomaly detection
+    df = run_anomaly_detection(df)
+
+    # 6. Classification (forecasting)
+    run_classification(df)
