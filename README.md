@@ -1,5 +1,6 @@
 # Air Quality Forecasting & Anomaly Detection
 
+
 1. Project Title & Short Description
 An end-to-end time-series machine learning pipeline for air quality data, including:
 - Data cleaning
@@ -7,6 +8,7 @@ An end-to-end time-series machine learning pipeline for air quality data, includ
 - Anomaly detection
 - Forecasting future CO levels
 - Evaluation and visualization
+
 
 2. Problem Statement
 ## Problem Statement
@@ -19,6 +21,7 @@ This project aims to:
 
 The goal is to provide actionable insights and early warnings for air pollution events.
 
+
 3. Dataset
 ## Dataset
 
@@ -27,6 +30,9 @@ The goal is to provide actionable insights and early warnings for air pollution 
 - Features include sensor readings for gases (CO, NMHC, NOx, etc.), temperature, and humidity.
 - CSV format with semicolon separator (`;`) and comma decimal (`,`).
 
+
+
+
 4. Features / Methodology
 ## Features & Methodology
 
@@ -34,6 +40,7 @@ The goal is to provide actionable insights and early warnings for air pollution 
 - Replace invalid sensor readings (-200) with NaN
 - Interpolate and forward/backward fill missing values
 - Combine Date and Time columns into a datetime index
+
 
 ### Feature Engineering
 - Time-based features: hour, day_of_week, month, is_weekend
@@ -50,21 +57,8 @@ The goal is to provide actionable insights and early warnings for air pollution 
 - Hyperparameter tuning using GridSearchCV
 - Scaled features to prevent leakage
 
+
 ### Evaluation
 - Accuracy, ROC-AUC, Confusion Matrix, Classification Report
 - Feature Importance plot
 - ROC Curve visualization
-
-5. Project Structure
-## Project Structure
-
-AirQualityForecasting/
-├── data/                # Raw CSV dataset
-├── notebook/            # Exploratory analysis and experiments
-├── src/                 # Python scripts
-│   ├── load_clean.py
-│   ├── feature_engineering.py
-│   ├── anomaly_detection.py
-│   ├── forecasting.py
-├── README.md            # Project description
-├── requirements.txt     # Python dependencies
