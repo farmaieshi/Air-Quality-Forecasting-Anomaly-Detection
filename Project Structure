@@ -1,0 +1,12 @@
+## Project Structure
+
+AirQualityForecasting/
+├── data/                # Raw CSV dataset
+├── notebook/            # Exploratory analysis and experiments
+├── src/                 # Python scripts
+│   ├── load_clean.py
+│   ├── feature_engineering.py
+│   ├── anomaly_detection.py
+│   ├── forecasting.py
+├── README.md            # Project description
+├── requirements.txt     # Python dependencies
