@@ -274,3 +274,10 @@ if __name__ == "__main__":
 
     # 6. Classification (forecasting)
     run_classification(df)
+
+import pickle
+
+with open("random_forest_air_quality.pkl", "wb") as f:
+    pickle.dump(best_model, f)
+
+print("Model saved successfully.")
