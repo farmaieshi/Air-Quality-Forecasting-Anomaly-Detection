@@ -129,6 +129,8 @@ Air-Quality-Forecasting-Anomaly-Detection/
 │
 ├── notebooks/
 │   └── Air_Quality_Forecasting.ipynb
+├── Models/
+│   └── random_forest_air_quality.pkl
 ```
 
 ---
