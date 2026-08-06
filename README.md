@@ -1,4 +1,4 @@
-# Air Quality Forecasting & Anomaly Detection
+# Air Quality Time-Series Analytics, Forecasting & Anomaly Detection
 
 
 1. Project Title & Short Description
