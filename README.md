@@ -129,8 +129,6 @@ Air-Quality-Forecasting-Anomaly-Detection/
 │
 ├── notebooks/
 │   └── Air_Quality_Forecasting.ipynb
-│
-└── images/
 ```
 
 ---
