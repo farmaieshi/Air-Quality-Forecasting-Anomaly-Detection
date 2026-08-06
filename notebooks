@@ -254,7 +254,7 @@ def run_classification(df: pd.DataFrame):
 # ============================================================
 if __name__ == "__main__":
 
-    DATA_PATH = "AirQualityUCI.csv"
+    DATA_PATH = "data/AirQualityUCI.xlsx"
 
     # 1. Load and clean data
     df = load_and_clean_data(DATA_PATH)
