@@ -1,64 +1,170 @@
-# Air Quality Time-Series Analytics, Forecasting & Anomaly Detection
+# 🌍 Air Quality Time-Series Analytics, Forecasting & Anomaly Detection
 
+An end-to-end Data Science project that analyzes environmental sensor data using Time Series Analysis, Feature Engineering, Machine Learning, and Anomaly Detection techniques.
 
-1. Project Title & Short Description
-An end-to-end time-series machine learning pipeline for air quality data, including:
-- Data cleaning
-- Feature engineering
-- Anomaly detection
-- Forecasting future CO levels
-- Evaluation and visualization
+The project predicts future Carbon Monoxide (CO) pollution levels and detects abnormal sensor behavior using historical air quality measurements.
 
+---
 
-2. Problem Statement
-## Problem Statement
+## 📌 Project Overview
 
-Air pollution is a major environmental issue that affects public health.  
-This project aims to:
+This project builds a complete machine learning workflow for environmental data analytics.
 
-1. Detect anomalies in air quality sensor data.
-2. Forecast if CO (Carbon Monoxide) levels will exceed a threshold in the next hour.
+Main objectives:
 
-The goal is to provide actionable insights and early warnings for air pollution events.
+- Analyze hourly air quality measurements
+- Detect abnormal sensor behavior
+- Forecast future CO concentration
+- Support environmental monitoring through predictive analytics
 
+---
 
-3. Dataset
-## Dataset
+## 🚀 Key Features
 
-- Source: [Air Quality UCI Dataset](https://archive.ics.uci.edu/ml/datasets/Air+Quality)
-- Data contains hourly measurements from an air quality monitoring station in Italy.
-- Features include sensor readings for gases (CO, NMHC, NOx, etc.), temperature, and humidity.
-- CSV format with semicolon separator (`;`) and comma decimal (`,`).
+- Time Series Analysis
+- Data Cleaning & Preprocessing
+- Feature Engineering
+- Exploratory Data Analysis (EDA)
+- Anomaly Detection (Isolation Forest)
+- CO Forecasting (Random Forest)
+- Hyperparameter Tuning (GridSearchCV)
+- TimeSeriesSplit Cross Validation
+- Feature Importance Analysis
 
+---
 
+## 🛠 Tech Stack
 
+**Programming**
 
-4. Features / Methodology
-## Features & Methodology
+- Python
+
+**Libraries**
+
+- Pandas
+- NumPy
+- Scikit-learn
+- Matplotlib
+- Seaborn
+
+**Machine Learning**
+
+- Random Forest
+- Isolation Forest
+- GridSearchCV
+- TimeSeriesSplit
+
+---
+
+## 📊 Dataset
+
+**Source:** UCI Machine Learning Repository – Air Quality Dataset
+
+The dataset contains hourly environmental measurements collected from an air quality monitoring station in Italy, including:
+
+- CO
+- NOx
+- NO2
+- Temperature
+- Humidity
+- Air Quality Sensor Measurements
+
+---
+
+## ⚙ Machine Learning Workflow
 
 ### Data Cleaning
-- Replace invalid sensor readings (-200) with NaN
-- Interpolate and forward/backward fill missing values
-- Combine Date and Time columns into a datetime index
 
+- Replaced invalid sensor readings (-200)
+- Interpolated missing values
+- Created Datetime index
 
 ### Feature Engineering
-- Time-based features: hour, day_of_week, month, is_weekend
-- Lag features: previous CO readings
-- Rolling statistics and differences
+
+- Time Features
+- Lag Features
+- Rolling Statistics
+- Difference Features
 
 ### Anomaly Detection
-- Isolation Forest to detect anomalies in CO, temperature, and sensor readings
-- Scaled features for improved detection
 
-### Forecasting / Classification
-- Random Forest Classifier for predicting CO threshold exceedance
-- TimeSeriesSplit for cross-validation
-- Hyperparameter tuning using GridSearchCV
-- Scaled features to prevent leakage
+Isolation Forest
 
+### Forecasting
 
-### Evaluation
-- Accuracy, ROC-AUC, Confusion Matrix, Classification Report
-- Feature Importance plot
-- ROC Curve visualization
+Random Forest Classifier
+
+### Model Optimization
+
+- GridSearchCV
+- TimeSeriesSplit
+
+---
+
+## 📈 Model Evaluation
+
+Performance evaluated using:
+
+- Accuracy
+- ROC-AUC
+- Precision
+- Recall
+- F1-score
+- Confusion Matrix
+- ROC Curve
+- Feature Importance
+
+---
+
+## 📂 Repository Structure
+
+```text
+Air-Quality-Forecasting-Anomaly-Detection/
+│
+├── README.md
+├── requirements.txt
+│
+├── data/
+│   └── AirQualityUCI.csv
+│
+├── notebooks/
+│   └── Air_Quality_Forecasting.ipynb
+│
+└── images/
+```
+
+---
+
+## 🚀 Installation
+
+```bash
+git clone https://github.com/farmaieshi/Air-Quality-Forecasting-Anomaly-Detection.git
+
+cd Air-Quality-Forecasting-Anomaly-Detection
+
+pip install -r requirements.txt
+```
+
+---
+
+## ▶️ Run
+
+```bash
+jupyter notebook
+```
+
+Open:
+
+```
+notebooks/Air_Quality_Forecasting.ipynb
+```
+
+---
+
+## 🔮 Future Improvements
+
+- XGBoost / LightGBM
+- LSTM Forecasting
+- Streamlit Dashboard
+- Explainable AI (SHAP)
+- Real-time Air Quality Monitoring
